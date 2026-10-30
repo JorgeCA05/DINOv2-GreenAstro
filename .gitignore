@@ -1,0 +1,19 @@
+# Entorno virtual de Python
+.venv/
+
+# Archivos de datos pesados y salidas de CodeCarbon (no se suben a Git)
+data/*.h5
+data/emissions.csv
+
+# Archivos temporales de Python y Jupyter
+__pycache__/
+*.ipynb_checkpoints/
+
+# Compilaciones de LaTeX (si decides subir la memoria entera, solo queremos el .tex y .png, no los logs)
+memory/**/*.aux
+memory/**/*.log
+memory/**/*.out
+memory/**/*.gz
+memory/**/*.toc
+memory/**/*.fls
+memory/**/*.fdb_latexmk

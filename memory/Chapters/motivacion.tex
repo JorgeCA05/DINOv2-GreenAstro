@@ -1,0 +1,39 @@
+% ==============================================================================
+% SECCIÓN: Motivación y Planteamiento del Problema
+% Archivo: memoria/capitulos/motivacion.tex
+% ==============================================================================
+
+\section{Motivación: El dilema energético entre entrenamiento e inferencia a escala astrofísica}
+\label{sec:motivacion}
+
+La adopción de modelos basados en mecanismos de atención, tales como los \textit{Vision Transformers} (ViT) y los modelos fundacionales autosupervisados (p.~ej., DINOv2), ha redefinido el estado del arte en visión computacional. Sin embargo, este incremento en capacidad representacional introduce un debate crítico en torno a la computación sostenible (\textit{Green AI}) y la huella de carbono asociada al ciclo de vida del aprendizaje profundo.
+
+Para delimitar el alcance experimental de este trabajo, es fundamental distinguir rigurosamente las dos fases operativas de un modelo:
+
+\begin{equation}
+    E_{\text{total}} = E_{\text{preentrenamiento}} + \left( N_{\text{inferencias}} \times E_{\text{inferencia}} \right)
+    \label{eq:coste_energetico}
+\end{equation}
+
+\subsection{El preentrenamiento masivo: Gasto concentrado y amortizado}
+El preentrenamiento de arquitecturas densas sobre corpus masivos (como ImageNet o colecciones no supervisadas a escala web) exige una infraestructura de supercomputación considerable:
+\begin{itemize}
+    \item \textbf{Cómputo extremo:} Implica clústeres distribuidos ejecutando operaciones durante semanas de forma ininterrumpida.
+    \item \textbf{Huella de carbono inicial:} Representa consumos en órdenes de decenas o cientos de megavatios-hora (MWh), con su consecuente emisión de toneladas de dióxido de carbono equivalente ($\text{CO}_2\text{e}$).
+    \item \textbf{Amortización del recurso:} A pesar de su magnitud, constituye un \textbf{coste único y estático}. Una vez finalizado el entrenamiento, los pesos se congelan y se distribuyen mediante repositorios públicos (p.~ej., Hugging Face), permitiendo su reutilización directa sin incurrir nuevamente en dicha huella inicial.
+\end{itemize}
+
+\subsection{La inferencia masiva: El verdadero cuello de botella en astrofísica}
+En los grandes cartografiados astronómicos modernos, el término dominante de la ecuación~\eqref{eq:coste_energetico} pasa a ser el coste acumulado de inferencia cuando $N_{\text{inferencias}} \to \infty$:
+\begin{itemize}
+    \item \textbf{Volumen del catálogo:} Proyectos como el Observatorio Vera C. Rubin (\textit{Legacy Survey of Space and Time}, LSST) o el telescopio espacial Euclid procesarán decenas de miles de millones de fuentes celestes.
+    \item \textbf{El factor multiplicador:} Mientras que una red convolucional procesa la entrada mediante filtros locales con alta eficiencia de memoria, un \textit{Vision Transformer} sin comprimir evalúa matrices de auto-atención cuadráticas ($\mathcal{O}(N^2)$) sobre tensores en precisión de 32 bits (\textit{Float32}). Una fracción extra de energía consumida por imagen se multiplica por miles de millones de observaciones, haciendo que el consumo acumulado de inferencia supere por varios órdenes de magnitud el gasto energético del preentrenamiento original.
+\end{itemize}
+
+\subsection{Enfoque metodológico propuesto}
+Frente a este escenario, reentrenar arquitecturas desde cero resultaría ineficiente y contrario a los principios de sostenibilidad algorítmica. Este proyecto aborda la optimización en fase de inferencia mediante las siguientes líneas de actuación:
+\begin{enumerate}
+    \item \textbf{Transferencia de aprendizaje y ajuste fino focalizado:} Se aprovechan las representaciones latentes de modelos fundacionales preentrenados, limitando el reajuste al clasificador y a las etapas finales sobre el conjunto de datos Galaxy10 DECaLS.
+    \item \textbf{Optimización post-entrenamiento:} Se evalúan técnicas de \textbf{cuantización a enteros de 8 bits (INT8)} y \textbf{poda estructurada de cabezas de atención (\textit{attention head pruning})}, con el propósito de cuantificar la degradación admisible en precisión morfológica frente al decremento en consumo eléctrico y huella de carbono.
+    \item \textbf{Evaluación empírica del compromiso precisión-energía:} Se contrasta el rendimiento y consumo del ViT optimizado frente a redes convolucionales eficientes de referencia (como DenseNet-121 o ResNet-50), monitorizando los consumos mediante la herramienta \textit{CodeCarbon}.
+\end{enumerate}
